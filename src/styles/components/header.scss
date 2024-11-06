@@ -1,0 +1,36 @@
+.header {
+	background-color: var(--beltamozh-color-blue);
+
+	&__content {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 17px 40px;
+	}
+
+	&__burger {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		cursor: pointer;
+
+		span {
+			display: block;
+			width: 40px;
+			height: 6px;
+			background-color: var(--beltamozh-color-white);
+			border-radius: 25px;
+		}
+	}
+
+	&__search {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		aspect-ratio: 1;
+		width: 30px;
+		background-color: var(--beltamozh-color-white);
+		border-radius: 50%;
+		cursor: pointer;
+	}
+}

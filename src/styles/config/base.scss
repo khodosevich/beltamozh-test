@@ -1,0 +1,23 @@
+body {
+	font-size: 15px;
+	line-height: 1.2;
+	font-weight: 300;
+	font-family: Roboto, sans-serif;
+	color: var(--beltamozh-color-black);
+}
+
+.wrapper {
+	display: flex;
+	flex-direction: column;
+	min-height: 100%;
+}
+
+.page {
+	flex-grow: 1;
+	width: 100%;
+}
+
+.page__content {
+	display: flex;
+	gap: 20px;
+}
