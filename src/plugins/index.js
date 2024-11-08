@@ -1,6 +1,6 @@
-import vuetify from './vuetify'
+import vuetify from './vuetify';
 
-export function registerPlugins (app) {
-  app
-    .use(vuetify)
+export function registerPlugins(app) {
+	app
+		.use(vuetify);
 }

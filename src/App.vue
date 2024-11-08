@@ -6,15 +6,15 @@ import Table from '@/components/Table.vue';
 </script>
 
 <template>
-  <v-app class="wrapper">
-    <Header/>
-    <div class="page">
-      <div class="page__content">
-        <Sidebar/>
-        <Table/>
-      </div>
-    </div>
-  </v-app>
+    <v-app class="wrapper">
+        <Header/>
+        <div class="page">
+            <div class="page__content">
+                <Sidebar/>
+                <Table/>
+            </div>
+        </div>
+    </v-app>
 </template>
 
 <style>

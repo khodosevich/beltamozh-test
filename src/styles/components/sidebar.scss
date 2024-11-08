@@ -46,6 +46,7 @@
 
 	&__name {
 		transition: font-weight var(--beltamozh-default-transition), color var(--beltamozh-default-transition);
+		cursor: pointer;
 
 		&:hover,
 		&.active {
