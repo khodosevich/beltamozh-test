@@ -2,11 +2,24 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	height: 100dvh;
+	height: 1000px;
 	width: 337px;
+	margin-left: -337px;
 	padding: 28px 32px;
 	box-shadow: var(--beltamozh-box-shadow);
 	z-index: 100;
+	opacity: 0;
+	visibility: hidden;
+	transform: translate(-100%);
+	transition: opacity var(--beltamozh-default-transition), visibility var(--beltamozh-default-transition),
+				transform var(--beltamozh-default-transition), margin-left var(--beltamozh-default-transition);
+
+	&.active {
+		opacity: 1;
+		visibility: visible;
+		transform: translate(0);
+		margin-left: 0;
+	}
 
 	&__header {
 		display: flex;

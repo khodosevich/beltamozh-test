@@ -20,6 +20,22 @@
 			height: 6px;
 			background-color: var(--beltamozh-color-white);
 			border-radius: 25px;
+			transition: transform var(--beltamozh-default-transition);
+		}
+
+		&.active {
+			span:nth-child(1) {
+				transform: rotate(45deg) translate(6px, 7px);
+			}
+
+			span:nth-child(2) {
+				opacity: 0;
+			}
+
+			span:nth-child(3) {
+				transform: rotate(-45deg) translate(6px, -6px);
+			}
+
 		}
 	}
 

@@ -1,24 +1,33 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
+import { useStore } from 'vuex';
+import { ProfileEnum } from '@/store/index.js';
 
-const tableData = ref([]);
-
-const fetchData = async () => {
-    try {
-        const response = await fetch('https://retoolapi.dev/wHFLgA/data');
-        const data = await response.json();
-        tableData.value = data;
-    }
-    catch (error) {
-        console.error('Error fetching data:', error);
-    }
-};
+const store = useStore();
+const users = computed(() => store.getters.FILTERED_USERS);
+const currentProfile = computed(() => store.getters.CURRENT_PROFILE);
 
 onMounted(() => {
     fetchData();
 });
 
+const fetchData = () => {
+    store.dispatch('SET_USERS');
+};
+
+const profileTitle = computed(() => {
+    switch (currentProfile.value) {
+        case ProfileEnum.ALL:
+            return 'Все';
+        case ProfileEnum.PROCESSED:
+            return 'Обработанные';
+        case ProfileEnum.UNPROCESSED:
+            return 'Не обработанные';
+    }
+});
+
 const headers = [
+    { text: 'Статус', align: 'left', value: 'status' },
     { text: 'Имя', align: 'left', value: 'firstName' },
     { text: 'Фамилия', align: 'right', value: 'lastName' },
     { text: 'Компания', align: 'right', value: 'company' },
@@ -33,7 +42,9 @@ const headers = [
     <div class="table">
         <div class="table__top">
             <div class="table__refresh">
-                Обработанные
+                <h5>
+                    {{ profileTitle }}
+                </h5>
                 <v-btn>
                     <img src="../assets/refresh.svg" width="25" height="25" alt="">
                 </v-btn>
@@ -61,12 +72,18 @@ const headers = [
         <div class="table__content">
             <v-data-table
                 :headers="headers"
-                :items="tableData"
+                :items="users"
                 item-key="id"
                 class="elevation-1"
             >
                 <template v-slot:item="props">
                     <tr>
+                        <td v-show="currentProfile === ProfileEnum.ALL">
+                            <img v-if="props.item.status" src="../assets/cloud-done.svg"
+                                 width="32" height="32" alt="">
+                            <img v-else src="../assets/cloud-error.svg"
+                                 width="32" height="32" alt="">
+                        </td>
                         <td>{{ props.item.firstName }}</td>
                         <td>{{ props.item.lastName }}</td>
                         <td>{{ props.item.company }}</td>

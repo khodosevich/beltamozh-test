@@ -2,6 +2,9 @@
 import Header from '@/components/Header.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import Table from '@/components/Table.vue';
+import { useStore } from 'vuex';
+
+const store = useStore();
 
 </script>
 
