@@ -6,7 +6,7 @@ const store = useStore();
 const burgerIsOpen = computed(() => store.getters.BURGER_STATE);
 
 const updateBurgerState = () => {
-    store.dispatch('TOGGLE_BURGER_STATE', !burgerIsOpen.value);
+    store.dispatch('TOGGLE_BURGER_STATE_ACTION', !burgerIsOpen.value);
 };
 </script>
 

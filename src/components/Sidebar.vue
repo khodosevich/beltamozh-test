@@ -13,7 +13,7 @@ const burgerIsOpen = computed(() => store.getters.BURGER_STATE);
 const currentProfile = computed(() => store.getters.CURRENT_PROFILE);
 
 const setProfile = (profile) => {
-    store.dispatch('SET_CURRENT_PROFILE', profile);
+    store.dispatch('SET_CURRENT_PROFILE_ACTION', profile);
 }
 </script>
 

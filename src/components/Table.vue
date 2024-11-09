@@ -3,6 +3,13 @@ import { computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { ProfileEnum } from '@/store/index.js';
 
+defineProps({
+    openPopup: {
+        type: Function,
+        required: true
+    }
+});
+
 const store = useStore();
 const users = computed(() => store.getters.FILTERED_USERS);
 const currentProfile = computed(() => store.getters.CURRENT_PROFILE);
@@ -11,8 +18,10 @@ onMounted(() => {
     fetchData();
 });
 
-const fetchData = () => {
-    store.dispatch('SET_USERS');
+const fetchData = async () => {
+    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
+    await store.dispatch('SET_USERS_ACTION');
+    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
 };
 
 const profileTitle = computed(() => {
@@ -45,7 +54,7 @@ const headers = [
                 <h5>
                     {{ profileTitle }}
                 </h5>
-                <v-btn>
+                <v-btn @click="fetchData">
                     <img src="../assets/refresh.svg" width="25" height="25" alt="">
                 </v-btn>
             </div>
@@ -57,7 +66,7 @@ const headers = [
                 </v-btn>
 
                 <div class="table__actions-types">
-                    <div class="table__actions-type">
+                    <div class="table__actions-type" @click="openPopup">
                         Добавить
                     </div>
                     <div class="table__actions-type">

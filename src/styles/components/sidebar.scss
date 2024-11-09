@@ -2,8 +2,9 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	height: 1000px;
+	height: calc(100dvh - 64px);
 	width: 337px;
+	min-width: 337px;
 	margin-left: -337px;
 	padding: 28px 32px;
 	box-shadow: var(--beltamozh-box-shadow);
@@ -63,7 +64,7 @@
 
 		&:hover,
 		&.active {
-			color: #0f4c82;
+			color: var(--beltamozh-color-blue);
 		}
 
 		&.active {
