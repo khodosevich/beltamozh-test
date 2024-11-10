@@ -1,17 +1,17 @@
 <script setup>
 import { computed, ref, toRaw, watch } from 'vue';
 import { useStore } from 'vuex';
-import { ProfileActionTypeEnum } from '@/store/index.js';
+import { ProfileActionTypeEnum } from '@/store/modules/ProfileModule.store.js';
 
 const popup = defineProps({
     closePopup: {
         type: Function,
-        required: true
+        required: true,
     },
     isPopupVisible: {
         type: Boolean,
-        required: true
-    }
+        required: true,
+    },
 });
 
 const firstName = ref('');
@@ -23,8 +23,8 @@ const email = ref('');
 const interests = ref('');
 
 const store = useStore();
-const actionType = computed(() => store.getters.PROFILE_ACTION_TYPE);
-const activeProfileId = computed(() => store.getters.ACTIVE_PROFILE_ID);
+const actionType = computed(() => store.getters['ProfileModule/PROFILE_ACTION_TYPE']);
+const activeUserId = computed(() => store.getters['UserModule/ACTIVE_USER_ID']);
 
 const clearFields = () => {
     firstName.value = '';
@@ -34,10 +34,10 @@ const clearFields = () => {
     phone.value = '';
     email.value = '';
     interests.value = '';
-}
+};
 
 const addNewProfile = async () => {
-    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
+    await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', true);
 
     const newProfile = toRaw({
         firstName: firstName.value,
@@ -46,17 +46,19 @@ const addNewProfile = async () => {
         jobTitle: jobTitle.value,
         phone: phone.value,
         email: email.value,
-        interests: interests.value
+        interests: interests.value,
     });
 
     try {
-        await store.dispatch("ADD_NEW_PROFILE_ACTION", newProfile);
+        await store.dispatch('UserModule/ADD_NEW_USER_ACTION', newProfile);
         popup.closePopup();
         clearFields();
-    } catch (error) {
-        console.error("Ошибка при добавлении профиля:", error);
-    } finally {
-        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
+    }
+    catch (error) {
+        console.error('Ошибка при добавлении профиля:', error);
+    }
+    finally {
+        await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', false);
     }
 };
 
@@ -72,7 +74,7 @@ const editProfile = async () => {
     };
 
     const updatedParams = Object.fromEntries(
-        Object.entries(updatedProfile).filter(([key, value]) => value !== '')
+        Object.entries(updatedProfile).filter(([key, value]) => value !== ''),
     );
 
     if (Object.keys(updatedParams).length === 0) {
@@ -80,25 +82,29 @@ const editProfile = async () => {
     }
 
     try {
-        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
-        await store.dispatch('UPDATE_PROFILE_ACTION', updatedParams);
-        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
-    } catch (error) {
+        await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', true);
+        await store.dispatch('UserModule/UPDATE_USER_ACTION', updatedParams);
+    }
+    catch (error) {
         console.error('Ошибка при изменении профиля:', error);
+    }
+    finally {
+        await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', false);
     }
 };
 
 const setProfileToEdit = async () => {
-    if (activeProfileId.value === -1) {
+    if (activeUserId.value === -1) {
         alert('Выберите пользователя для изменений, кликнув по нему в таблице.');
         popup.closePopup();
-        await store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
+        await store.dispatch('ProfileModule/UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
         return;
     }
 
     try {
-        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
-        const profile = await store.dispatch('GET_PROFILE_BY_ID_ACTION', activeProfileId.value);
+        await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', true);
+        const profile = await store.dispatch('UserModule/GET_USER_BY_ID_ACTION', activeUserId.value);
+
         firstName.value = profile.firstName;
         lastName.value = profile.lastName;
         company.value = profile.company;
@@ -106,12 +112,14 @@ const setProfileToEdit = async () => {
         phone.value = profile.phone;
         email.value = profile.email;
         interests.value = profile.interests;
-    } catch (error) {
-        console.error("Ошибка при получении профиля:", error);
-    } finally {
-        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
     }
-}
+    catch (error) {
+        console.error('Ошибка при получении профиля:', error);
+    }
+    finally {
+        await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', false);
+    }
+};
 
 const searchProfile = async () => {
     const query = {
@@ -125,7 +133,7 @@ const searchProfile = async () => {
     };
 
     const searchParams = Object.fromEntries(
-        Object.entries(query).filter(([key, value]) => value !== '')
+        Object.entries(query).filter(([key, value]) => value !== ''),
     );
 
     if (Object.keys(searchParams).length === 0) {
@@ -133,38 +141,28 @@ const searchProfile = async () => {
     }
 
     try {
-        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
-        await store.dispatch('GET_PROFILES_BY_SEARCH_ACTION', searchParams);
-        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
-    } catch (error) {
+        await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', true);
+        await store.dispatch('UserModule/GET_USERS_BY_SEARCH_ACTION', searchParams);
+    }
+    catch (error) {
         console.error('Ошибка при поиске профилей:', error);
+    }
+    finally {
+        await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', false);
     }
 };
 
 const cancel = () => {
-    store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
+    store.dispatch('ProfileModule/UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
     popup.closePopup();
     clearFields();
-}
+};
 
-const popupHandler = () => {
-    switch (actionType.value) {
-        case ProfileActionTypeEnum.ADD: {
-            addNewProfile();
-            break;
-        }
-        case ProfileActionTypeEnum.EDIT: {
-            editProfile();
-            break;
-        }
-        case ProfileActionTypeEnum.SEARCH: {
-            searchProfile();
-            break;
-        }
-        default:
-            break;
-    }
-}
+const actionHandler = {
+    [ProfileActionTypeEnum.ADD]: addNewProfile,
+    [ProfileActionTypeEnum.EDIT]: editProfile,
+    [ProfileActionTypeEnum.SEARCH]: searchProfile,
+};
 
 watch(() => actionType.value, (newValue) => {
     if (actionType.value === ProfileActionTypeEnum.EDIT) {
@@ -224,7 +222,8 @@ watch(() => actionType.value, (newValue) => {
                 <v-btn @click="cancel">
                     Закрыть
                 </v-btn>
-                <v-btn @click="popupHandler" :style="{ backgroundColor: 'var(--beltamozh-color-blue)', color: 'var(--beltamozh-color-white)'}">
+                <v-btn @click="actionHandler[actionType]"
+                       :style="{ backgroundColor: 'var(--beltamozh-color-blue)', color: 'var(--beltamozh-color-white)'}">
                     Применить
                 </v-btn>
             </div>
@@ -232,37 +231,6 @@ watch(() => actionType.value, (newValue) => {
     </div>
 </template>
 
-<style lang="scss" scoped>
-.popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--beltamozh-overlay);
-    display: flex;
-    align-items: center;
-    justify-content: end;
-    z-index: 1000;
-
-    &__content {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        background: var(--beltamozh-color-white);
-        margin-right: 20px;
-        padding: 20px;
-        border-radius: 5px;
-        max-width: 400px;
-        width: 100%;
-        height: calc(100% - 64px);
-        box-shadow: var(--beltamozh-box-shadow);
-    }
-
-    &__btns {
-        display: flex;
-        gap: 10px;
-        justify-content: end;
-    }
-}
+<style scoped>
+@import "../styles/components/popup.scss";
 </style>

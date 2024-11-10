@@ -8,6 +8,7 @@ import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
 
 const isPopupVisible = ref(false);
+
 function openPopup() {
     isPopupVisible.value = true;
 }
@@ -17,7 +18,7 @@ function closePopup() {
 }
 
 const store = useStore();
-const isLoading = computed(() => store.getters.IS_FETCH_REQUEST)
+const isLoading = computed(() => store.getters['LoaderModule/IS_FETCH_REQUEST']);
 </script>
 
 <template>

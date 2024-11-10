@@ -1,0 +1,32 @@
+.popup {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: var(--beltamozh-overlay);
+	display: flex;
+	align-items: center;
+	justify-content: end;
+	z-index: 1000;
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		background: var(--beltamozh-color-white);
+		margin-right: 20px;
+		padding: 20px;
+		border-radius: 5px;
+		max-width: 400px;
+		width: 100%;
+		height: calc(100% - 64px);
+		box-shadow: var(--beltamozh-box-shadow);
+	}
+
+	&__btns {
+		display: flex;
+		gap: 10px;
+		justify-content: end;
+	}
+}

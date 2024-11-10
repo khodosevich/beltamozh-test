@@ -1,7 +1,8 @@
 <script setup>
 import { computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
-import { ProfileActionTypeEnum, ProfileEnum } from '@/store/index.js';
+import { ProfileEnum } from '@/store/modules/UserModule.store.js';
+import { ProfileActionTypeEnum } from '@/store/modules/ProfileModule.store.js';
 
 const popup = defineProps({
     openPopup: {
@@ -11,14 +12,14 @@ const popup = defineProps({
 });
 
 const store = useStore();
-const users = computed(() => store.getters.FILTERED_USERS);
-const currentProfile = computed(() => store.getters.CURRENT_PROFILE);
-const activeProfileId = computed(() => store.getters.ACTIVE_PROFILE_ID);
+const users = computed(() => store.getters['UserModule/FILTERED_USERS']);
+const currentProfile = computed(() => store.getters['UserModule/CURRENT_PROFILE']);
+const activeUserId = computed(() => store.getters['UserModule/ACTIVE_USER_ID']);
 
 const fetchData = async () => {
-    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
-    await store.dispatch('SET_USERS_ACTION');
-    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
+    await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', true);
+    await store.dispatch('UserModule/SET_USERS_ACTION');
+    await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', false);
 };
 
 const profileTitle = computed(() => {
@@ -44,30 +45,29 @@ const headers = [
 ];
 
 const addHandler = () => {
-    store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.ADD);
+    store.dispatch('ProfileModule/UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.ADD);
     popup.openPopup();
 }
 
 const editHandler = () => {
-    store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.EDIT);
+    store.dispatch('ProfileModule/UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.EDIT);
     popup.openPopup();
 }
 
 const deleteHandler = async () => {
-    if (activeProfileId.value === -1) {
+    if (activeUserId.value === -1) {
         alert('Выберите пользователя для удаления, кликнув по нему в таблице.');
-        await store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
+        await store.dispatch('ProfileModule/UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
         return;
     }
 
-    await store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.DELETE);
-    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
-    await store.dispatch('DELETE_PROFILE_ACTION', activeProfileId.value);
-    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
+    await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', true);
+    await store.dispatch('UserModule/DELETE_USERS_ACTION', activeUserId.value);
+    await store.dispatch('LoaderModule/UPDATE_FETCH_REQUEST_ACTION', false);
 }
 
-const activeProfileHandler = (id) => {
-    store.dispatch('SET_ACTIVE_PROFILE_ID_ACTION', id);
+const activeUserHandler = (id) => {
+    store.dispatch('UserModule/SET_ACTIVE_USER_ID_ACTION', id);
 }
 
 onMounted(() => {
@@ -116,8 +116,8 @@ onMounted(() => {
             >
                 <template v-slot:item="props">
                     <tr
-                        :class="{ 'selected-row': props.item.id === activeProfileId }"
-                        @click="activeProfileHandler(props.item.id)"
+                        :class="{ 'selected-row': props.item.id === activeUserId }"
+                        @click="activeUserHandler(props.item.id)"
                     >
                         <td v-show="currentProfile === ProfileEnum.ALL">
                             <img v-if="props.item.status" src="../assets/cloud-done.svg"

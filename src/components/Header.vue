@@ -1,26 +1,26 @@
 <script setup>
 import { useStore } from 'vuex';
 import { computed } from 'vue';
-import { ProfileActionTypeEnum } from '@/store/index.js';
+import { ProfileActionTypeEnum } from '@/store/modules/ProfileModule.store.js';
 
 const store = useStore();
-const burgerIsOpen = computed(() => store.getters.BURGER_STATE);
+const burgerIsOpen = computed(() => store.getters['BurgerModule/BURGER_STATE']);
 
 const popup = defineProps({
     openPopup: {
         type: Function,
-        required: true
-    }
-})
+        required: true,
+    },
+});
 
 const updateBurgerState = () => {
-    store.dispatch('TOGGLE_BURGER_STATE_ACTION', !burgerIsOpen.value);
+    store.dispatch('BurgerModule/TOGGLE_BURGER_STATE_ACTION', !burgerIsOpen.value);
 };
 
 const searchHandler = () => {
-    store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.SEARCH);
+    store.dispatch('ProfileModule/UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.SEARCH);
     popup.openPopup();
-}
+};
 </script>
 
 <template>
