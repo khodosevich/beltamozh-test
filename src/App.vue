@@ -24,7 +24,7 @@ const isLoading = computed(() => store.getters.IS_FETCH_REQUEST)
     <div v-if="isLoading" class="loader">Выполняется запрос...</div>
 
     <v-app class="wrapper">
-        <Header/>
+        <Header :openPopup="openPopup"/>
         <div class="page">
             <div class="page__content">
                 <Sidebar/>
@@ -45,7 +45,7 @@ const isLoading = computed(() => store.getters.IS_FETCH_REQUEST)
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--beltamozh-overlay);
     display: flex;
     justify-content: center;
     align-items: center;

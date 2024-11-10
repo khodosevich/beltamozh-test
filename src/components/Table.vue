@@ -1,9 +1,9 @@
 <script setup>
 import { computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
-import { ProfileEnum } from '@/store/index.js';
+import { ProfileActionTypeEnum, ProfileEnum } from '@/store/index.js';
 
-defineProps({
+const popup = defineProps({
     openPopup: {
         type: Function,
         required: true
@@ -13,10 +13,7 @@ defineProps({
 const store = useStore();
 const users = computed(() => store.getters.FILTERED_USERS);
 const currentProfile = computed(() => store.getters.CURRENT_PROFILE);
-
-onMounted(() => {
-    fetchData();
-});
+const activeProfileId = computed(() => store.getters.ACTIVE_PROFILE_ID);
 
 const fetchData = async () => {
     await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
@@ -36,15 +33,46 @@ const profileTitle = computed(() => {
 });
 
 const headers = [
-    { text: 'Статус', align: 'left', value: 'status' },
-    { text: 'Имя', align: 'left', value: 'firstName' },
-    { text: 'Фамилия', align: 'right', value: 'lastName' },
-    { text: 'Компания', align: 'right', value: 'company' },
-    { text: 'Специальность', align: 'right', value: 'jobTitle' },
-    { text: 'Телефон', align: 'right', value: 'phone' },
-    { text: 'Е-mail', align: 'right', value: 'email' },
-    { text: 'Интересы', align: 'right', value: 'interests' },
+    { title: 'Статус', align: 'left', value: 'status' },
+    { title: 'Имя', align: 'left', value: 'firstName' },
+    { title: 'Фамилия', align: 'right', value: 'lastName' },
+    { title: 'Компания', align: 'right', value: 'company' },
+    { title: 'Специальность', align: 'right', value: 'jobTitle' },
+    { title: 'Телефон', align: 'right', value: 'phone' },
+    { title: 'Е-mail', align: 'right', value: 'email' },
+    { title: 'Интересы', align: 'right', value: 'interests' },
 ];
+
+const addHandler = () => {
+    store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.ADD);
+    popup.openPopup();
+}
+
+const editHandler = () => {
+    store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.EDIT);
+    popup.openPopup();
+}
+
+const deleteHandler = async () => {
+    if (activeProfileId.value === -1) {
+        alert('Выберите пользователя для удаления, кликнув по нему в таблице.');
+        await store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
+        return;
+    }
+
+    await store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', ProfileActionTypeEnum.DELETE);
+    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
+    await store.dispatch('DELETE_PROFILE_ACTION', activeProfileId.value);
+    await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
+}
+
+const activeProfileHandler = (id) => {
+    store.dispatch('SET_ACTIVE_PROFILE_ID_ACTION', id);
+}
+
+onMounted(() => {
+    fetchData();
+});
 </script>
 
 <template>
@@ -66,13 +94,13 @@ const headers = [
                 </v-btn>
 
                 <div class="table__actions-types">
-                    <div class="table__actions-type" @click="openPopup">
+                    <div class="table__actions-type" @click="addHandler">
                         Добавить
                     </div>
-                    <div class="table__actions-type">
+                    <div class="table__actions-type" @click="editHandler">
                         Изменить
                     </div>
-                    <div class="table__actions-type">
+                    <div class="table__actions-type" @click="deleteHandler">
                         Удалить
                     </div>
                 </div>
@@ -84,9 +112,13 @@ const headers = [
                 :items="users"
                 item-key="id"
                 class="elevation-1"
+                :items-per-page="13"
             >
                 <template v-slot:item="props">
-                    <tr>
+                    <tr
+                        :class="{ 'selected-row': props.item.id === activeProfileId }"
+                        @click="activeProfileHandler(props.item.id)"
+                    >
                         <td v-show="currentProfile === ProfileEnum.ALL">
                             <img v-if="props.item.status" src="../assets/cloud-done.svg"
                                  width="32" height="32" alt="">
@@ -109,4 +141,8 @@ const headers = [
 
 <style scoped>
 @import "../styles/components/table.scss";
+
+.selected-row {
+    background-color: var(--beltamozh-color-grey);
+}
 </style>

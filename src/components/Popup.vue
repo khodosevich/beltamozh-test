@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref, toRaw } from 'vue';
+import { computed, ref, toRaw, watch } from 'vue';
 import { useStore } from 'vuex';
+import { ProfileActionTypeEnum } from '@/store/index.js';
 
 const popup = defineProps({
     closePopup: {
@@ -22,6 +23,8 @@ const email = ref('');
 const interests = ref('');
 
 const store = useStore();
+const actionType = computed(() => store.getters.PROFILE_ACTION_TYPE);
+const activeProfileId = computed(() => store.getters.ACTIVE_PROFILE_ID);
 
 const clearFields = () => {
     firstName.value = '';
@@ -57,10 +60,117 @@ const addNewProfile = async () => {
     }
 };
 
+const editProfile = async () => {
+    const updatedProfile = {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        company: company.value,
+        jobTitle: jobTitle.value,
+        phone: phone.value,
+        email: email.value,
+        interests: interests.value,
+    };
+
+    const updatedParams = Object.fromEntries(
+        Object.entries(updatedProfile).filter(([key, value]) => value !== '')
+    );
+
+    if (Object.keys(updatedParams).length === 0) {
+        return;
+    }
+
+    try {
+        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
+        await store.dispatch('UPDATE_PROFILE_ACTION', updatedParams);
+        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
+    } catch (error) {
+        console.error('Ошибка при изменении профиля:', error);
+    }
+};
+
+const setProfileToEdit = async () => {
+    if (activeProfileId.value === -1) {
+        alert('Выберите пользователя для изменений, кликнув по нему в таблице.');
+        popup.closePopup();
+        await store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
+        return;
+    }
+
+    try {
+        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
+        const profile = await store.dispatch('GET_PROFILE_BY_ID_ACTION', activeProfileId.value);
+        firstName.value = profile.firstName;
+        lastName.value = profile.lastName;
+        company.value = profile.company;
+        jobTitle.value = profile.jobTitle;
+        phone.value = profile.phone;
+        email.value = profile.email;
+        interests.value = profile.interests;
+    } catch (error) {
+        console.error("Ошибка при получении профиля:", error);
+    } finally {
+        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
+    }
+}
+
+const searchProfile = async () => {
+    const query = {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        company: company.value,
+        jobTitle: jobTitle.value,
+        phone: phone.value,
+        email: email.value,
+        interests: interests.value,
+    };
+
+    const searchParams = Object.fromEntries(
+        Object.entries(query).filter(([key, value]) => value !== '')
+    );
+
+    if (Object.keys(searchParams).length === 0) {
+        return;
+    }
+
+    try {
+        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', true);
+        await store.dispatch('GET_PROFILES_BY_SEARCH_ACTION', searchParams);
+        await store.dispatch('UPDATE_FETCH_REQUEST_ACTION', false);
+    } catch (error) {
+        console.error('Ошибка при поиске профилей:', error);
+    }
+};
+
 const cancel = () => {
+    store.dispatch('UPDATE_PROFILE_ACTION_TYPE_ACTION', -1);
     popup.closePopup();
     clearFields();
 }
+
+const popupHandler = () => {
+    switch (actionType.value) {
+        case ProfileActionTypeEnum.ADD: {
+            addNewProfile();
+            break;
+        }
+        case ProfileActionTypeEnum.EDIT: {
+            editProfile();
+            break;
+        }
+        case ProfileActionTypeEnum.SEARCH: {
+            searchProfile();
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+watch(() => actionType.value, (newValue) => {
+    if (actionType.value === ProfileActionTypeEnum.EDIT) {
+        setProfileToEdit();
+    }
+});
 </script>
 
 <template>
@@ -114,7 +224,7 @@ const cancel = () => {
                 <v-btn @click="cancel">
                     Закрыть
                 </v-btn>
-                <v-btn @click="addNewProfile" :style="{ backgroundColor: 'var(--beltamozh-color-blue)', color: 'var(--beltamozh-color-white)'}">
+                <v-btn @click="popupHandler" :style="{ backgroundColor: 'var(--beltamozh-color-blue)', color: 'var(--beltamozh-color-white)'}">
                     Применить
                 </v-btn>
             </div>
@@ -129,7 +239,7 @@ const cancel = () => {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--beltamozh-overlay);
     display: flex;
     align-items: center;
     justify-content: end;
